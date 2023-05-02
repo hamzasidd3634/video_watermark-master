@@ -73,7 +73,7 @@ class VideoWatermark {
         await getApplicationDocumentsDirectory()
             .then((value) => value.path + '/');
 
-    int time = DateTime.now().millisecond;
+    int time = DateTime.now().microsecondsSinceEpoch;
 
     String trimmedVideo = outputPath;
         '$outputPath${'trimmed_$time'}.${outputFormat.toString().split(".").last}';
