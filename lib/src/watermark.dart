@@ -6,7 +6,7 @@ class Watermark {
   /// Source of image to be added in the video as watermark.
   ///
   /// Supported sources: `File`, `Assets` and `Network`.
-  final WatermarkSource image;
+  final WatermarkSource? image;
 
 
   final int quality;
@@ -36,7 +36,7 @@ class Watermark {
   ///
   /// Required parameter [image].
   Watermark({
-    required this.image,
+    this.image,
     this.watermarkSize,
     this.opacity = 1.0,
     this.quality =30,
@@ -44,11 +44,13 @@ class Watermark {
   });
 
   Future<String> toCommand() async {
-    return await image.toCommand().then(
-          (value) =>
-              '-i $value -c:v libx264 -crf $quality -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 5 -filter_complex "[1:v]${(watermarkSize ?? WatermarkSize.symmertric(100)).toCommand()}format=argb,geq=r=\'r(X,Y)\':a=\'$opacity*alpha(X,Y)\'[i];[0:v][i]overlay=${(watermarkAlignment ?? WatermarkAlignment.center).toCommand()}[o]" -map "[o]" -map "0:a? -shortest -movflags +faststart "',
-              // '-i $value -s 1280x720 -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 5 -filter_complex "overlay=${(watermarkAlignment ?? WatermarkAlignment.center).toCommand()} -codec:a copy"',
-              // '-i $value -s 1280x720 -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 5 -filter_complex "overlay=${(watermarkAlignment ?? WatermarkAlignment.center).toCommand()} -codec:a copy"',
-        );
+    if(image != null){
+      return await image!.toCommand().then(
+            (value) =>
+                '-i $value -c:v libx264 -crf $quality -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 5 -filter_complex "[1:v]${(watermarkSize ?? WatermarkSize.symmertric(100)).toCommand()}format=argb,geq=r=\'r(X,Y)\':a=\'$opacity*alpha(X,Y)\'[i];[0:v][i]overlay=${(watermarkAlignment ?? WatermarkAlignment.center).toCommand()}[o]" -map "[o]" -map "0:a? -shortest -movflags +faststart "',
+          );
+    }else{
+      return await '-c:v libx264 -crf $quality -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 5 -filter_complex -map "[o]" -map "0:a? -shortest -movflags +faststart "';
+    }
   }
 }
